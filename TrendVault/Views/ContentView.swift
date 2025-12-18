@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
 
     @Environment(NavigationStore.self) private var nav
+    @Environment(MockStore.self) private var store
 
     @State private var searchText: String = ""
     @State private var zoomLevel: ZoomLevel = .medium
@@ -36,9 +37,10 @@ struct ContentView: View {
     private var detailContent: some View {
         switch nav.selection {
         case .inbox:
-            PlaceholderDetailView(
-                title: "Inbox",
-                subtitle: "Grid kommt in Chunk 5"
+            InboxGridView(
+                items: store.items,
+                searchText: searchText,
+                zoomLevel: zoomLevel
             )
 
         case .board(let id):
@@ -102,7 +104,7 @@ struct ContentView: View {
         }
         .pickerStyle(.segmented)
         .frame(width: 160)
-        .help("Zoom (placeholder)")
+        .help("Zoom")
     }
 }
 
@@ -144,9 +146,34 @@ enum ZoomLevel: String, CaseIterable, Identifiable {
         case .large: return "rectangle.grid.1x2"
         }
     }
+
+    var tileWidth: CGFloat {
+        switch self {
+        case .small: return 120
+        case .medium: return 180
+        case .large: return 260
+        }
+    }
+
+    var tileHeight: CGFloat {
+        switch self {
+        case .small: return 120
+        case .medium: return 180
+        case .large: return 220
+        }
+    }
+
+    var spacing: CGFloat {
+        switch self {
+        case .small: return 10
+        case .medium: return 12
+        case .large: return 14
+        }
+    }
 }
 
 #Preview {
     ContentView()
         .environment(NavigationStore())
+        .environment(MockStore())
 }

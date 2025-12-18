@@ -11,11 +11,13 @@ import SwiftUI
 struct TrendVaultApp: App {
 
     @State private var navigationStore = NavigationStore()
+    @State private var mockStore = MockStore()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(navigationStore)
+                .environment(mockStore)
         }
     }
 }

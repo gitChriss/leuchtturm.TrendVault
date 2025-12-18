@@ -20,8 +20,13 @@ final class NavigationStore {
 
     var selection: Selection = .inbox
 
-    // Placeholder für Chunk 2 (jetzt mit Domain Model)
-    var boards: [Board] = SeedData.makeBoards()
+    // Mock Store (Chunk 4)
+    let store: MockStore
 
-    init() {}
+    // Convenience für bestehende UI (Sidebar/Title)
+    var boards: [Board] { store.boards }
+
+    init(store: MockStore = MockStore()) {
+        self.store = store
+    }
 }

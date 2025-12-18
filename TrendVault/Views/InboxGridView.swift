@@ -13,6 +13,8 @@ struct InboxGridView: View {
     let searchText: String
     let zoomLevel: ZoomLevel
 
+    @Binding var selectedItemID: UUID?
+
     @State private var selection: Set<UUID> = []
 
     private var filteredItems: [TrendItem] {
@@ -54,13 +56,16 @@ struct InboxGridView: View {
                     .contextMenu {
                         Button(selection.contains(item.id) ? "Unselect" : "Select") {
                             toggleSelection(id: item.id)
+                            syncPrimarySelection()
                         }
                         Button("Select All") {
                             selection = Set(filteredItems.map { $0.id })
+                            syncPrimarySelection()
                         }
                         if selection.isEmpty == false {
                             Button("Clear Selection") {
                                 selection.removeAll()
+                                syncPrimarySelection()
                             }
                         }
                     }
@@ -69,6 +74,11 @@ struct InboxGridView: View {
             .padding(zoomLevel.spacing)
         }
         .background(Color(nsColor: .windowBackgroundColor))
+        .onChange(of: filteredItems.map(\.id)) { _, _ in
+            // Wenn Filter die Auswahl ungültig macht, aufräumen.
+            selection = selection.intersection(Set(filteredItems.map { $0.id }))
+            syncPrimarySelection()
+        }
     }
 
     private var emptyState: some View {
@@ -96,10 +106,12 @@ struct InboxGridView: View {
 
         if flags.contains(.command) {
             toggleSelection(id: id)
+            syncPrimarySelection()
             return
         }
 
         selection = [id]
+        syncPrimarySelection()
     }
 
     private func toggleSelection(id: UUID) {
@@ -107,6 +119,14 @@ struct InboxGridView: View {
             selection.remove(id)
         } else {
             selection.insert(id)
+        }
+    }
+
+    private func syncPrimarySelection() {
+        if selection.count == 1 {
+            selectedItemID = selection.first
+        } else {
+            selectedItemID = nil
         }
     }
 }

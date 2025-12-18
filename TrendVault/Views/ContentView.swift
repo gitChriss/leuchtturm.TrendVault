@@ -15,6 +15,8 @@ struct ContentView: View {
     @State private var searchText: String = ""
     @State private var zoomLevel: ZoomLevel = .medium
 
+    @State private var selectedItemID: UUID? = nil
+
     var body: some View {
         NavigationSplitView {
             SidebarView()
@@ -29,6 +31,9 @@ struct ContentView: View {
                 zoomControl
             }
         }
+        .onChange(of: nav.selection) { _, _ in
+            selectedItemID = nil
+        }
     }
 
     // MARK: - Detail
@@ -37,11 +42,7 @@ struct ContentView: View {
     private var detailContent: some View {
         switch nav.selection {
         case .inbox:
-            InboxGridView(
-                items: store.items,
-                searchText: searchText,
-                zoomLevel: zoomLevel
-            )
+            inboxDetail
 
         case .board(let id):
             let boardTitle = nav.boards.first(where: { $0.id == id })?.title ?? "Board"
@@ -61,6 +62,33 @@ struct ContentView: View {
                 title: "Settings",
                 subtitle: "Placeholder"
             )
+        }
+    }
+
+    private var inboxDetail: some View {
+        HStack(spacing: 0) {
+            InboxGridView(
+                items: store.items,
+                searchText: searchText,
+                zoomLevel: zoomLevel,
+                selectedItemID: $selectedItemID
+            )
+
+            Divider()
+
+            Group {
+                if let selectedItemID,
+                   let item = store.items.first(where: { $0.id == selectedItemID }) {
+                    DetailView(item: item, selectedItemID: $selectedItemID)
+                        .frame(minWidth: 360)
+                } else {
+                    PlaceholderDetailView(
+                        title: "Detail",
+                        subtitle: "Wähle ein Item aus, um Metadaten zu bearbeiten."
+                    )
+                    .frame(minWidth: 360)
+                }
+            }
         }
     }
 

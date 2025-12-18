@@ -10,12 +10,13 @@ import SwiftUI
 struct ContentView: View {
 
     @Environment(NavigationStore.self) private var nav
-    @Environment(MockStore.self) private var store
 
     @State private var searchText: String = ""
     @State private var zoomLevel: ZoomLevel = .medium
 
     @State private var selectedItemID: UUID? = nil
+
+    private var store: MockStore { nav.store }
 
     var body: some View {
         NavigationSplitView {
@@ -45,11 +46,7 @@ struct ContentView: View {
             inboxDetail
 
         case .board(let id):
-            let boardTitle = nav.boards.first(where: { $0.id == id })?.title ?? "Board"
-            PlaceholderDetailView(
-                title: boardTitle,
-                subtitle: "Board View kommt in Chunk 7"
-            )
+            boardDetail(boardID: id)
 
         case .savedSearches:
             PlaceholderDetailView(
@@ -76,6 +73,24 @@ struct ContentView: View {
 
             Divider()
 
+            rightDetailPane
+        }
+    }
+
+    private func boardDetail(boardID: UUID) -> some View {
+        let boardTitle = nav.boards.first(where: { $0.id == boardID })?.title ?? "Board"
+        let boardItems = store.itemsInBoard(boardID: boardID)
+
+        return HStack(spacing: 0) {
+            BoardGridView(
+                items: boardItems,
+                searchText: searchText,
+                zoomLevel: zoomLevel,
+                selectedItemID: $selectedItemID
+            )
+
+            Divider()
+
             Group {
                 if let selectedItemID,
                    let item = store.items.first(where: { $0.id == selectedItemID }) {
@@ -83,11 +98,27 @@ struct ContentView: View {
                         .frame(minWidth: 360)
                 } else {
                     PlaceholderDetailView(
-                        title: "Detail",
+                        title: boardTitle,
                         subtitle: "Wähle ein Item aus, um Metadaten zu bearbeiten."
                     )
                     .frame(minWidth: 360)
                 }
+            }
+        }
+    }
+
+    private var rightDetailPane: some View {
+        Group {
+            if let selectedItemID,
+               let item = store.items.first(where: { $0.id == selectedItemID }) {
+                DetailView(item: item, selectedItemID: $selectedItemID)
+                    .frame(minWidth: 360)
+            } else {
+                PlaceholderDetailView(
+                    title: "Detail",
+                    subtitle: "Wähle ein Item aus, um Metadaten zu bearbeiten."
+                )
+                .frame(minWidth: 360)
             }
         }
     }
@@ -203,5 +234,4 @@ enum ZoomLevel: String, CaseIterable, Identifiable {
 #Preview {
     ContentView()
         .environment(NavigationStore())
-        .environment(MockStore())
 }

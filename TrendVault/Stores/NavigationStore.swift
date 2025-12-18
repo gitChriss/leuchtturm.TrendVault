@@ -18,19 +18,10 @@ final class NavigationStore {
         case settings
     }
 
-    struct Board: Identifiable, Hashable {
-        let id: UUID
-        var title: String
-    }
-
     var selection: Selection = .inbox
 
-    // Placeholder für Chunk 2
-    var boards: [Board] = [
-        .init(id: UUID(), title: "Brand"),
-        .init(id: UUID(), title: "Campaigns"),
-        .init(id: UUID(), title: "UI Patterns")
-    ]
+    // Placeholder für Chunk 2 (jetzt mit Domain Model)
+    var boards: [Board] = SeedData.makeBoards()
 
     init() {}
 }

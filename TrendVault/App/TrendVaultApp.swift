@@ -10,9 +10,12 @@ import SwiftUI
 @main
 struct TrendVaultApp: App {
 
+    @State private var navigationStore = NavigationStore()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(navigationStore)
         }
     }
 }
